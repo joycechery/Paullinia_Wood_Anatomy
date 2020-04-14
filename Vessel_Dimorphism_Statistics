@@ -1,0 +1,76 @@
+#Box&Whisker plots for vessel diamaters in Paullinia
+library(ggplot2)
+library(dplyr)
+
+setwd("/Users/joycechery/Desktop/Research/IAWA_article/Figure3/Vessel_Sizes_spreadsheets/Analyses/")
+datum<- read.csv("Small.csv")
+Vessel_Diameter<-datum$Feret
+summary<- group_by(datum, Species) %>%
+  summarise(
+    count = n(),
+    mean = mean(Feret, na.rm = TRUE),
+    sd = sd(Feret, na.rm = TRUE),
+    se= sd(Feret)/sqrt(n()))
+View(summary)
+
+ggplot(datum, aes(x=Species, y=Vessel_Diameter)) +
+scale_y_continuous(breaks = scales::pretty_breaks(n = 14)) +
+geom_boxplot() + 
+theme(axis.text.x = element_text(face = "italic", size = 12, angle = 90)) + ggtitle("Diameter of Narrow Vessels (μm)") 
+
+#large vessel plot
+setwd("/Users/joycechery/Desktop/Research/IAWA_article/Figure3/Vessel_Sizes_spreadsheets/Analyses/")
+datum<- read.csv("Large.csv")
+
+summary<- group_by(datum, Species) %>%
+  summarise(
+    count = n(),
+    mean = mean(Feret, na.rm = TRUE),
+    sd = sd(Feret, na.rm = TRUE),
+    se= sd(Feret)/sqrt(n()))
+View(summary)
+
+Vessel_Diameter<-as.numeric(as.character(datum$Feret))
+ggplot(datum, aes(x=Species, y=Vessel_Diameter)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 14)) +
+  geom_boxplot() + 
+  theme(axis.text.x = element_text(face = "italic", size = 12, angle = 90)) + ggtitle("Diameter of Wide Vessels (μm)") 
+#View(summary)
+
+#with jitter
+datum<- read.csv("/Users/joycechery/Desktop/Mac_Deskop/Articles!/IAWA_Wood_Anatomy/Data&Scripts/Vessels/VesselSizes/Vessel_Sizes_spreadsheets/new/small.csv")
+ggplot(datum, aes(datum$species, y=datum$feret, fill= datum$species)) +  
+  geom_boxplot() + geom_jitter(width = 0.1, color= "black")  
+  ggtitle("Vessel Diamaters") + 
+  xlab("Treatment") + ylab("height") + 
+  theme (plot.title = element_text(size = 20), 
+         axis.text.x = element_text(size = 16), 
+         axis.text.y = element_text(size = 16), 
+         axis.title.x = element_text(size = 16),  
+        axis.title.y= element_text(size = 16))  
+  
+
+#Wilcox test to compare the regular vs. variant xylem of successive cambia
+library(rstatix)
+data<- read.csv("P.weinmaniifolia_RegularandVariantXylem.csv")
+
+#we already know the distributions are not normal so no t test
+#lets assume the distributions dont have the same variance
+wx_1<- t_test(data,Wide_Vessel_Diameter ~ Species, paired = FALSE, var.equal = FALSE)
+wx_1
+
+#0.000117 for micrantha
+#0.242 for psuedota
+#0.000106 for trigonia
+#0.916 for weinmanifolia
+
+  
+#simple boxplot
+datum<- read.csv("/Users/joycechery/Desktop/Mac_Deskop/Articles!/IAWA_Wood_Anatomy/Data&Scripts/Vessels/VesselSizes/Vessel_Sizes_spreadsheets/")
+Species <- factor(datum$species, levels =c("P. alata","P. baileyi","P. bracteosa","P. dasystachya","P. echinata", "P. exalata","P. fibrigera","P. fimbriata","P. latifolia","P. micrantha" , "P. obovata","P. pinnata","P. pseudota","P. rubiginosa","P. rugosa","P. sprucei"        "P. turbacensis"    "P. weinmaniifolia" "P.sp."))
+diamaters <- datum$feret 
+datum <- data.frame(Species, diamaters) 
+boxplot(diamaters ~ Species, data = datum, lwd = 2, xlab= "Vessel Diamaters", ylab = 'Mean Fluorescence', main = "test")  
+
+stripchart(mean ~ treatment, vertical = TRUE, data = datum,  
+           method = "jitter", add = TRUE, pch = 20, col = 'red') 
